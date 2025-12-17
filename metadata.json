@@ -1,0 +1,7 @@
+{
+  "name": "EcoTrace Recycle_V2",
+  "description": "A comprehensive recycling and traceability tracking application for Android and Web. Features batch creation, sorting, fibre pack generation, and full lifecycle audit trails.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
