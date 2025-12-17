@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Card, Input, Button, Badge } from '../components/UI';
 import { getTraceabilityChain } from '../services/api';
-import { TraceableItem, BatchType } from '../types';
+import { TraceableItem, BatchType, InboundBatch, FibrePack } from '../types';
 import { Search, ArrowUp, Link as LinkIcon } from 'lucide-react';
 
 const ItemNode: React.FC<{ item: TraceableItem; isRoot?: boolean }> = ({ item, isRoot }) => (
@@ -29,11 +29,13 @@ const ItemNode: React.FC<{ item: TraceableItem; isRoot?: boolean }> = ({ item, i
     <div className="text-sm font-medium text-gray-600 leading-tight px-2">
        {item.type === BatchType.INBOUND && (item as any).supplier}
        {item.type === BatchType.SORTED && `${(item as any).color} ${(item as any).material}`}
-       {item.type === BatchType.FIBRE && (item as any).qualityGrade}
+       {item.type === BatchType.FIBRE && `${(item as FibrePack).parentSortedIds.length} source packs`}
     </div>
     
     <div className="mt-2 pt-2 border-t border-gray-50 w-full flex justify-between items-center text-xs">
-       <span className="font-bold text-eco-charcoal">{(item as any).weightKg} kg</span>
+       <span className="font-bold text-eco-charcoal">
+         {item.type === BatchType.INBOUND ? `${(item as InboundBatch).cartonCount} cartons` : `${(item as any).weightKg} kg`}
+        </span>
        <span className="text-gray-400">{item.createdAt.split('T')[0]}</span>
     </div>
   </div>

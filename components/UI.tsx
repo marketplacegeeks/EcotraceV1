@@ -1,5 +1,5 @@
 import React from 'react';
-import { LogOut, Home, Box, Layers, Factory, Search, History, Check } from 'lucide-react';
+import { LogOut, Home, Box, Layers, Factory, Search, History, Check, Settings, Ship, Printer } from 'lucide-react';
 import { User, UserRole } from '../types';
 import { Logo } from './Logo';
 
@@ -16,17 +16,29 @@ interface LayoutProps {
 export const Layout: React.FC<LayoutProps> = ({ children, user, onLogout, activeTab, onNavigate }) => {
   if (!user) return <div className="min-h-screen bg-eco-cream flex flex-col">{children}</div>;
 
-  const NAV_ITEMS = [
-    { id: 'home', label: 'Home', icon: Home, role: 'ALL' },
-    { id: 'inbound', label: 'Inbound', icon: Box, role: 'ALL' },
-    { id: 'sorting', label: 'Sorting', icon: Layers, role: 'ALL' },
-    { id: 'fibre', label: 'Fibre', icon: Factory, role: 'ALL' },
-    { id: 'trace', label: 'Trace', icon: Search, role: 'ALL' },
-  ];
+  const getNavItems = (role: UserRole) => {
+    const operatorItems = [
+      { id: 'inbound', label: 'Inbound', icon: Box },
+      { id: 'sorting', label: 'Sorting', icon: Layers },
+      { id: 'fibre', label: 'Fibre', icon: Factory },
+      { id: 'consignment', label: 'Consignment', icon: Ship },
+      { id: 'trace', label: 'Trace', icon: Search },
+    ];
 
-  if (user.role === UserRole.ADMIN) {
-     NAV_ITEMS.push({ id: 'admin', label: 'Admin', icon: History, role: UserRole.ADMIN });
-  }
+    if (role === UserRole.ADMIN) {
+        return [
+            { id: 'home', label: 'Home', icon: Home },
+            ...operatorItems,
+            { id: 'printing', label: 'Printing', icon: Printer },
+            { id: 'admin', label: 'Admin', icon: History },
+            { id: 'configs', label: 'Configs', icon: Settings },
+        ];
+    }
+    
+    return operatorItems;
+  };
+
+  const NAV_ITEMS = getNavItems(user.role);
 
   return (
     <div className="min-h-screen flex flex-col bg-eco-cream pb-24 md:pb-0 font-sans">
@@ -148,8 +160,9 @@ export const Button: React.FC<ButtonProps> = ({ variant = 'primary', className =
   );
 };
 
-export const Card: React.FC<{ children: React.ReactNode; className?: string; title?: string; action?: React.ReactNode }> = ({ children, className = '', title, action }) => (
-  <div className={`bg-white p-6 md:p-8 rounded-[2rem] shadow-sm border border-gray-100 hover:shadow-md transition-shadow duration-300 ${className}`}>
+// FIX: Update Card component to accept standard HTML div attributes like onClick.
+export const Card: React.FC<React.HTMLAttributes<HTMLDivElement> & { children: React.ReactNode; className?: string; title?: string; action?: React.ReactNode; }> = ({ children, className = '', title, action, ...props }) => (
+  <div className={`bg-white p-6 md:p-8 rounded-[2rem] shadow-sm border border-gray-100 hover:shadow-md transition-shadow duration-300 ${className}`} {...props}>
     {(title || action) && (
       <div className="flex justify-between items-center mb-8 pb-4 border-b border-gray-50">
         {title && <h3 className="text-xl font-bold text-eco-charcoal tracking-tight">{title}</h3>}
@@ -174,7 +187,7 @@ export const Input: React.FC<React.InputHTMLAttributes<HTMLInputElement> & { lab
 // Selection Grid - Replaces Select for small sets of options (Pills)
 export const SelectionGrid: React.FC<{
   label: string;
-  options: string[];
+  options: { id: string; label: string }[];
   value: string;
   onChange: (val: string) => void;
   className?: string;
@@ -184,21 +197,59 @@ export const SelectionGrid: React.FC<{
     <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
       {options.map((opt) => (
         <button
-          key={opt}
+          key={opt.id}
           type="button"
-          onClick={() => onChange(opt)}
+          onClick={() => onChange(opt.id)}
           className={`py-4 px-3 rounded-2xl text-sm font-bold transition-all border relative overflow-hidden active:scale-95 ${
-            value === opt
+            value === opt.id
               ? 'border-eco-orange bg-eco-orange text-white shadow-lg shadow-eco-orange/20'
               : 'border-gray-100 bg-white text-gray-600 hover:border-gray-300 hover:bg-gray-50'
           }`}
         >
-          {opt}
+          {opt.label}
         </button>
       ))}
     </div>
   </div>
 );
+
+export const MultiSelectionGrid: React.FC<{
+  label: string;
+  options: string[];
+  values: string[];
+  onChange: (newValues: string[]) => void;
+  className?: string;
+}> = ({ label, options, values, onChange, className = '' }) => {
+  const handleToggle = (opt: string) => {
+    const newValues = values.includes(opt)
+      ? values.filter(v => v !== opt)
+      : [...values, opt];
+    onChange(newValues);
+  };
+  return (
+      <div className={`mb-8 ${className}`}>
+          <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-3 ml-1">{label}</label>
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+              {options.map((opt) => (
+                  <button
+                      key={opt}
+                      type="button"
+                      onClick={() => handleToggle(opt)}
+                      className={`py-4 px-3 rounded-2xl text-sm font-bold transition-all border relative overflow-hidden active:scale-95 flex items-center justify-center gap-2 ${
+                          values.includes(opt)
+                              ? 'border-eco-orange bg-eco-orange text-white shadow-lg shadow-eco-orange/20'
+                              : 'border-gray-100 bg-white text-gray-600 hover:border-gray-300 hover:bg-gray-50'
+                      }`}
+                  >
+                      {values.includes(opt) && <Check size={16} />}
+                      {opt}
+                  </button>
+              ))}
+          </div>
+      </div>
+  );
+};
+
 
 // Visual Color Selector
 export const ColorSelector: React.FC<{

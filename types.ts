@@ -27,8 +27,8 @@ export interface BaseItem {
 export interface InboundBatch extends BaseItem {
   type: BatchType.INBOUND;
   supplier: string;
-  weightKg: number;
-  receivedDate: string;
+  cartonCount: number;
+  cartonIds: string[];
 }
 
 export interface SortedPack extends BaseItem {
@@ -43,8 +43,10 @@ export interface SortedPack extends BaseItem {
 export interface FibrePack extends BaseItem {
   type: BatchType.FIBRE;
   parentSortedIds: string[]; // Can be created from multiple sorted packs
-  qualityGrade: string;
   weightKg: number;
+  brands: string[];
+  material: string;
+  color: string;
 }
 
 export type TraceableItem = InboundBatch | SortedPack | FibrePack;
@@ -56,4 +58,15 @@ export interface AuditLog {
   userId: string;
   details: string;
   relatedItemId?: string;
+}
+
+export interface Consignment {
+  id: string;
+  vendor: string;
+  country: string;
+  totalWeightKg: number;
+  consignmentNumber: string;
+  linkedFibrePackIds: string[];
+  createdAt: string;
+  createdBy: string;
 }
